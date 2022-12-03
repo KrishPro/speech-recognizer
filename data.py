@@ -70,5 +70,6 @@ if __name__ == '__main__':
         audio: torch.Tensor = audio
         print(audio.shape)
         plt.imshow(audio.squeeze(0))
+        plt.title(text)
         plt.show()
 
