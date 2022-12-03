@@ -147,6 +147,13 @@ class LanguageModel(nn.Module):
         self.mask_token = -1e+25
         self.mask = torch.zeros(max_len, max_len).fill_(self.mask_token).triu_(1)
 
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
     def forward(self, spectrogram: torch.Tensor):
         """
         spectrogram.shape: (B, 96, S)
