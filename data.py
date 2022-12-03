@@ -93,11 +93,16 @@ class Dataset(data.Dataset):
     def collate_fn(data):
         audios, texts = zip(*data)
 
+        # audio.shape = (S, 96)
+
+        input_lens = [audio.size(0) for audio in audios]
+        target_lens = [len(text) for text in texts]
+
         audios = nn.utils.rnn.pad_sequence(audios, batch_first=True).transpose(1, 2)
 
         texts = nn.utils.rnn.pad_sequence(map(torch.tensor, texts), batch_first=True)
 
-        return audios, texts
+        return audios, texts, input_lens, target_lens
 
 
 class DataModule(LightningDataModule):
@@ -124,10 +129,10 @@ if __name__ == '__main__':
     datamodule = DataModule(DATA_DIR, batch_size=32)
     datamodule.setup()
 
-    for audio, text in datamodule.train_dataloader():
+    for audio, text, *_ in datamodule.train_dataloader():
         audio: torch.Tensor = audio[0]
         print(audio.shape)
         plt.imshow(audio)
-        plt.title(text)
+        plt.title(text[0])
         plt.show()
 
