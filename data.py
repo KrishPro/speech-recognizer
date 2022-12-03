@@ -4,6 +4,7 @@ Written by KrishPro @ KP
 filename: `data.py`
 """
 
+from pytorch_lightning import LightningDataModule
 from typing import List
 
 import torch.nn as nn
@@ -98,13 +99,35 @@ class Dataset(data.Dataset):
 
         return audios, texts
 
-if __name__ == '__main__':
-    dataset = Dataset(os.path.join(DATA_DIR, 'cv-valid-train'), os.path.join(DATA_DIR, 'cv-valid-train.csv'))
 
-    for audio, text in dataset:
-        audio: torch.Tensor = audio
+class DataModule(LightningDataModule):
+    def __init__(self, data_dir: str, batch_size: int, use_workers: bool = False, n_mels: int = 96) -> None:
+        super().__init__()
+
+        self.data_dir = data_dir
+        self.batch_size = batch_size
+        self.use_workers = use_workers
+        self.n_mels = n_mels
+
+    def setup(self, stage: str=None) -> None:
+        self.train_dataset = Dataset(os.path.join(self.data_dir, 'cv-valid-train'), os.path.join(self.data_dir, 'cv-valid-train.csv'))
+        self.val_dataset = Dataset(os.path.join(self.data_dir, 'cv-valid-dev'), os.path.join(self.data_dir, 'cv-valid-dev.csv'))
+        
+    def train_dataloader(self):
+        return data.DataLoader(self.train_dataset, self.batch_size, shuffle=True, collate_fn=Dataset.collate_fn, pin_memory=True, num_workers=os.cpu_count() if self.use_workers else 0, persistent_workers=self.use_workers)
+    
+    def val_dataloader(self):
+        return data.DataLoader(self.val_dataset, self.batch_size, shuffle=False, collate_fn=Dataset.collate_fn, pin_memory=True, num_workers=os.cpu_count() if self.use_workers else 0, persistent_workers=self.use_workers)
+
+
+if __name__ == '__main__':
+    datamodule = DataModule(DATA_DIR, batch_size=32)
+    datamodule.setup()
+
+    for audio, text in datamodule.train_dataloader():
+        audio: torch.Tensor = audio[0]
         print(audio.shape)
-        plt.imshow(audio.squeeze(0))
+        plt.imshow(audio)
         plt.title(text)
         plt.show()
 
