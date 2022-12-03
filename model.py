@@ -172,32 +172,32 @@ class LanguageModel(nn.Module):
 
         return out
 
-def test():
-    from data import Dataset, DATA_DIR
-    import os
+# def test():
+#     from data import Dataset, DATA_DIR
+#     import os
 
-    dims = {
-        "n_mels":96,
-        "d_model":128, 
-        "n_heads":2,
-        "dim_feedforward":256,
-        "vocab_size":29,
-        "n_layers":2,
-        "max_len":1024, 
-        "dropout_p":0.1
-    }
+#     dims = {
+#         "n_mels":96,
+#         "d_model":128, 
+#         "n_heads":2,
+#         "dim_feedforward":256,
+#         "vocab_size":29,
+#         "n_layers":2,
+#         "max_len":1024, 
+#         "dropout_p":0.1
+#     }
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset = Dataset(os.path.join(DATA_DIR, 'cv-valid-train'), os.path.join(DATA_DIR, 'cv-valid-train.csv'), n_mels=dims['n_mels'])
+#     dataset = Dataset(os.path.join(DATA_DIR, 'cv-valid-train'), os.path.join(DATA_DIR, 'cv-valid-train.csv'), n_mels=dims['n_mels'])
 
-    model = LanguageModel(**dims).to(device)
+#     model = LanguageModel(**dims).to(device)
 
-    audio, text = Dataset.collate_fn([dataset[i] for i in range(32)])
+#     audio, text = Dataset.collate_fn([dataset[i] for i in range(32)])
 
-    print(f"Input.shape  : {audio.shape}")
-    print(f"Output.shape : {model(audio.to(device)).shape}")
-    print(f"Label.shape  : {text.shape}")
+#     print(f"Input.shape  : {audio.shape}")
+#     print(f"Output.shape : {model(audio.to(device)).shape}")
+#     print(f"Label.shape  : {text.shape}")
 
-if __name__ == '__main__':
-    test()
+# if __name__ == '__main__':
+#     test()

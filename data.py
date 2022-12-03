@@ -125,14 +125,14 @@ class DataModule(LightningDataModule):
         return data.DataLoader(self.val_dataset, self.batch_size, shuffle=False, collate_fn=Dataset.collate_fn, pin_memory=True, num_workers=os.cpu_count() if self.use_workers else 0, persistent_workers=self.use_workers)
 
 
-if __name__ == '__main__':
-    datamodule = DataModule(DATA_DIR, batch_size=32)
-    datamodule.setup()
+# if __name__ == '__main__':
+#     datamodule = DataModule(DATA_DIR, batch_size=32)
+#     datamodule.setup()
 
-    for audio, text, *_ in datamodule.train_dataloader():
-        audio: torch.Tensor = audio[0]
-        print(audio.shape)
-        plt.imshow(audio)
-        plt.title(text[0])
-        plt.show()
+#     for audio, text, *_ in datamodule.train_dataloader():
+#         audio: torch.Tensor = audio[0]
+#         print(audio.shape)
+#         plt.imshow(audio)
+#         plt.title(text[0])
+#         plt.show()
 
