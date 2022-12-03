@@ -29,12 +29,8 @@ class Model(LightningModule):
         self.lr = lr
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(self.model.parameters(), self.lr)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-                                        optimizer, mode='min',
-                                        factor=0.50, patience=6)
-        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
-
+        return optim.Adam(self.model.parameters(), self.lr)
+     
     def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx):
         audio, target, input_lens, target_lens = batch
 
@@ -45,7 +41,6 @@ class Model(LightningModule):
         if (self.log_interval is not None) and (batch_idx % self.log_interval == 0): print(f"#{self.current_epoch} | #{batch_idx} | {loss.detach()}")
 
         self.log("train_loss", loss)
-        self.log("lr", self.optimizers().param_groups[0]['lr'], prog_bar=True)
 
         return loss
 
@@ -79,9 +74,8 @@ config = {
     "trainer": {
         "accelerator": "gpu",
         "devices": 1, 
-        "precision": 16,
+        "precision": 32,
         "accumulate_grad_batches": 1,
-        # "overfit_batches": 2,
         "max_epochs": 100
     },
     "early_stop": {
