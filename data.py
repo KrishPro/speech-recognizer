@@ -116,7 +116,7 @@ class DataModule(LightningDataModule):
 
     def setup(self, stage: str=None) -> None:
         self.train_dataset = Dataset(os.path.join(self.data_dir, 'cv-valid-train'), os.path.join(self.data_dir, 'cv-valid-train.csv'))
-        self.val_dataset = Dataset(os.path.join(self.data_dir, 'cv-valid-dev'), os.path.join(self.data_dir, 'cv-valid-dev.csv'))
+        self.val_dataset = Dataset(os.path.join(self.data_dir, 'cv-valid-dev'), os.path.join(self.data_dir, 'cv-valid-dev.csv'), valid=True)
         
     def train_dataloader(self):
         return data.DataLoader(self.train_dataset, self.batch_size, shuffle=True, collate_fn=Dataset.collate_fn, pin_memory=True, num_workers=os.cpu_count() if self.use_workers else 0, persistent_workers=self.use_workers)
