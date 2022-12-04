@@ -149,6 +149,16 @@ class LanguageModel(nn.Module):
 
         # self._reset_parameters()
 
+    @classmethod
+    def load_from_ckpt(cls, ckpt_path: str):
+        ckpt = torch.load(ckpt_path)
+
+        model = cls(**ckpt['dims'])
+
+        model.load_state_dict(ckpt['state_dict'])
+
+        return model
+
     def _reset_parameters(self):
         for p in self.parameters():
             if p.dim() > 1:
