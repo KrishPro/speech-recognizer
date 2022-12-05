@@ -9,6 +9,7 @@ __pycache__/
 Output/
 lightning_logs/
 raw_dataset/
+dataset/
 
 # Distribution / packaging
 .Python
