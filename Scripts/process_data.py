@@ -5,13 +5,9 @@ filename: `process_data.py`
 """
 
 from tqdm import tqdm
-import soundfile as sf
 import torchaudio
 import pandas as pd
-import torch.nn as nn
-import multiprocessing
 import random
-import librosa
 import json
 import os
 
@@ -65,7 +61,7 @@ def main(data_dir:str, output_dir:str, sample_rate:int = 8000):
     for k in data: random.shuffle(data[k])
 
     for k in data:
-        with open(os.path.join(output_dir, f'{k}.json')) as file:
+        with open(os.path.join(output_dir, f'{k}.json'), 'w') as file:
             file.write("\n".join(map(json.dumps, data[k])))
 
 
