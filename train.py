@@ -73,5 +73,7 @@ def train(config):
 
     trainer.fit(model, datamodule)
 
+    return trainer, model, datamodule
+
 if __name__ == '__main__':
     train(config)
