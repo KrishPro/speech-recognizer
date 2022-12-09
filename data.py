@@ -4,7 +4,9 @@ Written by KrishPro @ KP
 filename: `data.py`
 """
 
+from pytorch_lightning import LightningDataModule
 from typing import Callable, List
+import matplotlib.pyplot as plt
 import torch.utils.data as data
 import torchaudio.transforms as T
 import torch.nn as nn
@@ -73,3 +75,28 @@ class Dataset(data.Dataset):
         texts = nn.utils.rnn.pad_sequence(map(torch.tensor, texts), batch_first=True)
 
         return waves, texts, inputs_len, targets_len
+
+
+class DataModule(LightningDataModule):
+    def __init__(self, data_dir:str, batch_size:int, n_mels:int, use_workers:bool = True) -> None:
+        super().__init__()
+
+        self.data_dir = data_dir
+
+        self.batch_size = batch_size
+
+        self.n_mels = n_mels
+
+        self.use_workers = use_workers
+
+    def setup(self, mode:str=None):
+        self.train_dataset = Dataset(self.data_dir, 'train', n_mels=self.n_mels)
+        self.val_dataset = Dataset(self.data_dir, 'test', n_mels=self.n_mels)
+
+    def train_dataloader(self):
+        return data.DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=os.cpu_count() if self.use_workers else 0,
+        persistent_workers=self.use_workers, collate_fn=Dataset.collate_fn)
+    
+    def val_dataloader(self):
+        return data.DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=os.cpu_count() if self.use_workers else 0,
+        persistent_workers=self.use_workers, collate_fn=Dataset.collate_fn)
