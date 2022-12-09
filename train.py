@@ -7,7 +7,6 @@ filename: `train.py`
 from data import DataModule
 from model import Transformer
 
-import torch
 import torch.nn as nn
 import torch.optim as optim
 
@@ -15,21 +14,17 @@ from pytorch_lightning import LightningModule, Trainer
 
 
 class TrainModel(Transformer, LightningModule):
-    def __init__(self, n_mels: int, d_model: int, n_heads: int, dim_feedforward: int, n_layers: int, vocab_size: int, dropout_p: float, max_len: int = 1024):
+    def __init__(self, n_mels: int, d_model: int, n_heads: int, dim_feedforward: int, n_layers: int, vocab_size: int, dropout_p: float, learning_rate:float, max_len: int = 1024):
         super().__init__(n_mels, d_model, n_heads, dim_feedforward, n_layers, vocab_size, dropout_p, max_len)
 
         self.criterion = nn.CTCLoss(blank=28, zero_infinity=True)
+        self.lr = learning_rate
 
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=3e-4)
+        return optim.Adam(self.parameters(), lr=self.lr)
 
     def training_step(self, batch, batch_idx):
-        waves, texts, input_lens, target_lens = batch
-        # waves.shape: (B, M, S)
-        # outes.shape: (B, S, V)
-        # texts.shap: (B, S')
-
-        
+        waves, texts, input_lens, target_lens = batch       
         loss = self.criterion(self(waves).transpose(0, 1), texts, input_lens, target_lens)
         self.log("loss", loss.item())
         return loss
@@ -41,7 +36,7 @@ class TrainModel(Transformer, LightningModule):
         return loss
 
 config = {
-    "dims": {
+    "trainModel": {
         "n_mels": 96,
         "d_model": 128,
         "n_heads": 2,
@@ -49,7 +44,8 @@ config = {
         "n_layers": 3,
         "vocab_size": 29,
         "dropout_p": 0.1,
-        "max_len": 1024
+        "max_len": 1024,
+        "learning_rate": 3e-4
     },
     "data": {
         "data_dir": ".dataset",
@@ -58,15 +54,17 @@ config = {
     },
     "trainer": {
         "accelerator": "gpu",
+        "max_epochs": 10,
         "devices": 1
-    }
+    },
+    
 }
 
 
 def train(config):
-    model = TrainModel(**config['dims'])
+    model = TrainModel(**config['trainModel'])
 
-    datamodule = DataModule(**config['data'], n_mels=config['dims']['n_mels'])
+    datamodule = DataModule(**config['data'], n_mels=config['trainModel']['n_mels'])
 
     trainer = Trainer(**config['trainer'])
 
