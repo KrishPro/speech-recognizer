@@ -8,6 +8,7 @@ from data import DataModule
 from model import Transformer
 
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 
 from pytorch_lightning import LightningModule, Trainer
@@ -24,14 +25,16 @@ class TrainModel(Transformer, LightningModule):
         return optim.Adam(self.parameters(), lr=self.lr)
 
     def training_step(self, batch, batch_idx):
-        waves, texts, input_lens, target_lens = batch       
-        loss = self.criterion(self(waves).transpose(0, 1), texts, input_lens, target_lens)
+        waves, texts, input_lens, target_lens = batch   
+        inputs = F.log_softmax(self(waves)).transpose(0, 1) 
+        loss = self.criterion(inputs, texts, input_lens, target_lens)
         self.log("loss", loss.item())
         return loss
 
     def validation_step(self, batch, batch_idx):
         waves, texts, input_lens, target_lens = batch
-        loss = self.criterion(self(waves).transpose(0, 1), texts, input_lens, target_lens)
+        inputs = F.log_softmax(self(waves)).transpose(0, 1) 
+        loss = self.criterion(inputs, texts, input_lens, target_lens)
         self.log("val_loss", loss.item(), prog_bar=True)
         return loss
 
