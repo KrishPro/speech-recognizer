@@ -16,6 +16,7 @@ from pytorch_lightning import LightningModule, Trainer
 
 class TrainModel(Transformer, LightningModule):
     def __init__(self, n_mels: int, d_model: int, n_heads: int, dim_feedforward: int, n_layers: int, vocab_size: int, dropout_p: float, learning_rate:float, log_interval:int=None, max_len: int = 1024):
+        self.save_hyperparameters()
         super().__init__(n_mels, d_model, n_heads, dim_feedforward, n_layers, vocab_size, dropout_p, max_len)
 
         self.criterion = nn.CTCLoss(blank=28, zero_infinity=True)
