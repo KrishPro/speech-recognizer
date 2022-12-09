@@ -26,14 +26,14 @@ class TrainModel(Transformer, LightningModule):
 
     def training_step(self, batch, batch_idx):
         waves, texts, input_lens, target_lens = batch   
-        inputs = F.log_softmax(self(waves)).transpose(0, 1) 
+        inputs = F.log_softmax(self(waves), dim=2).transpose(0, 1) 
         loss = self.criterion(inputs, texts, input_lens, target_lens)
         self.log("loss", loss.item())
         return loss
 
     def validation_step(self, batch, batch_idx):
         waves, texts, input_lens, target_lens = batch
-        inputs = F.log_softmax(self(waves)).transpose(0, 1) 
+        inputs = F.log_softmax(self(waves), dim=2).transpose(0, 1) 
         loss = self.criterion(inputs, texts, input_lens, target_lens)
         self.log("val_loss", loss.item(), prog_bar=True)
         return loss
