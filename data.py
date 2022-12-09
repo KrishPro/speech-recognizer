@@ -92,14 +92,14 @@ class DataModule(LightningDataModule):
 
         self.use_workers = use_workers
 
-    def setup(self, mode:str=None):
+    def setup(self, stage:str=None):
         self.train_dataset = Dataset(self.data_dir, 'train', n_mels=self.n_mels)
         self.val_dataset = Dataset(self.data_dir, 'test', n_mels=self.n_mels)
 
     def train_dataloader(self):
         return data.DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=os.cpu_count() if self.use_workers else 0,
-        persistent_workers=self.use_workers, collate_fn=Dataset.collate_fn)
+        persistent_workers=self.use_workers, pin_memory=True, collate_fn=Dataset.collate_fn)
     
     def val_dataloader(self):
         return data.DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=os.cpu_count() if self.use_workers else 0,
-        persistent_workers=self.use_workers, collate_fn=Dataset.collate_fn)
+        persistent_workers=self.use_workers, pin_memory=True, collate_fn=Dataset.collate_fn)

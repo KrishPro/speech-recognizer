@@ -20,8 +20,6 @@ def self_attention(Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor, attn_mask:
     """
     B, S, E = Q.shape
 
-    if not attn_mask: attn_mask = torch.zeros(S, S)
-
     energy: torch.Tensor = torch.nan_to_num(torch.softmax((torch.baddbmm(attn_mask, Q, K.mT) / (E ** 0.5)), dim=2))
 
     return torch.bmm(energy, V)
@@ -43,7 +41,7 @@ class MultiHeadAttention(nn.Module):
 
         returns: (B, S, E)
         """
-        B, S, E, H = *x.shape, self.n_heads
+        (B, S, E), H = x.shape, self.n_heads
 
         Q: torch.Tensor = self.Q(x).reshape(B, S, H, E//H).permute(0, 2, 1, 3).reshape(B*H, S, E//H)
         K: torch.Tensor = self.K(x).reshape(B, S, H, E//H).permute(0, 2, 1, 3).reshape(B*H, S, E//H)
@@ -112,12 +110,12 @@ class Transformer(nn.Module):
 
         self.pos_embed = PositionalEmbedding(d_model, dropout_p, max_len=max_len)
 
-        self.layers: List[Callable[[torch.Tensor], torch.Tensor]] = nn.ModuleList([ TransformerLayer(d_model, n_heads, dim_feedforward) for _ in range(n_layers) ])
+        self.layers: List[Callable[[torch.Tensor], torch.Tensor]] = nn.ModuleList([ TransformerLayer(d_model, n_heads, dim_feedforward, dropout_p=dropout_p) for _ in range(n_layers) ])
 
         self.output: Callable[[torch.Tensor], torch.Tensor] = nn.Linear(d_model, vocab_size)
 
         self.mask_token = -1e-25
-        self.attn_mask = torch.empty(max_len, max_len).fill_(self.mask_token).triu_(1)
+        self.register_buffer('attn_mask', torch.empty(max_len, max_len).fill_(self.mask_token).triu_(1))
 
     def forward(self, x: torch.Tensor):
         """
