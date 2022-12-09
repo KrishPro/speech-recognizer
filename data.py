@@ -56,6 +56,9 @@ class Dataset(data.Dataset):
 
         wave: torch.Tensor = self.audio_masking(wave)
 
+        if wave.size(2) > 1024:
+            return self.__getitem__(idx-1 if idx != 0 else idx+1)
+
         text = self.vocab.text_to_ints(text)
 
         return wave.squeeze(0).T, text
