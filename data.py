@@ -75,7 +75,7 @@ class Dataset(data.Dataset):
         targets_len = list(map(len, texts))
 
         waves = nn.utils.rnn.pad_sequence(waves, batch_first=True).transpose(1, 2)
-        texts = nn.utils.rnn.pad_sequence(list(map(torch.tensor, texts)), batch_first=True)
+        texts = nn.utils.rnn.pad_sequence(map(torch.tensor, texts), batch_first=True)
 
         return waves, texts, inputs_len, targets_len
 
