@@ -20,7 +20,7 @@ def self_attention(Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor, attn_mask:
     """
     B, S, E = Q.shape
 
-    energy: torch.Tensor = torch.nan_to_num(torch.softmax((torch.baddbmm(attn_mask, Q, K.mT) / (E ** 0.5)), dim=2))
+    energy: torch.Tensor = torch.nan_to_num(torch.softmax((torch.baddbmm(attn_mask, Q, K.transpose(1, 2)) / (E ** 0.5)), dim=2))
 
     return torch.bmm(energy, V)
 
