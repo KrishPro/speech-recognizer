@@ -59,6 +59,7 @@ config = {
         "max_len": 1024,
         "learning_rate": 3e-4,
         "log_interval": 100,
+        "weight_decay": 0.01
     },
     "data": {
         "data_dir": ".dataset",
