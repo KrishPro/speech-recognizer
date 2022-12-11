@@ -27,7 +27,7 @@ class TrainModel(Transformer, LightningModule):
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
