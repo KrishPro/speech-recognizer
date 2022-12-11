@@ -42,6 +42,8 @@ class Dataset(data.Dataset):
         self.audio_masking: Callable[[torch.Tensor], torch.Tensor] = nn.Sequential(
             T.FrequencyMasking(freq_mask),
             T.TimeMasking(time_mask),
+            T.FrequencyMasking(freq_mask),
+            T.TimeMasking(time_mask),
         ) if not valid else nn.Identity()
 
         with open(os.path.join(data_dir, f'{split}.json')) as file:
