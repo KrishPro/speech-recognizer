@@ -15,16 +15,20 @@ from pytorch_lightning import LightningModule, Trainer
 
 
 class TrainModel(Transformer, LightningModule):
-    def __init__(self, n_mels: int, d_model: int, n_heads: int, dim_feedforward: int, n_layers: int, vocab_size: int, dropout_p: float, learning_rate:float, log_interval:int=None, max_len: int = 1024):
+    def __init__(self, n_mels: int, d_model: int, n_heads: int, dim_feedforward: int, n_layers: int, vocab_size: int, dropout_p: float, learning_rate:float, weight_decay:float, log_interval:int=None, max_len: int = 1024):
         self.save_hyperparameters()
         super().__init__(n_mels, d_model, n_heads, dim_feedforward, n_layers, vocab_size, dropout_p, max_len)
 
         self.criterion = nn.CTCLoss(blank=28, zero_infinity=True)
         self.log_interval = log_interval
+        self.weight_decay = weight_decay
         self.lr = learning_rate
 
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5)
+        return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
         waves, texts, input_lens, target_lens = batch   
@@ -33,6 +37,7 @@ class TrainModel(Transformer, LightningModule):
         if (self.log_interval is not None) and (batch_idx % self.log_interval == 0):
             print(f"EPOCH #{self.current_epoch} | BATCH #{batch_idx} | LOSS {loss.detach()}")
         self.log("loss", loss.detach())
+        self.log("lr", self.optimizers().param_groups[0]['lr'], prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
