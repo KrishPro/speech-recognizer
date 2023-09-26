@@ -49,25 +49,31 @@ def main(config):
 
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=10_000)
 
-    for epoch in range(config['epochs']):
-        audios, labels, audio_lengths, label_lengths = (t.to(config['device']) for t in dataset.get_batch(0, config['batch_size']))
-        with tqdm(range(config['batch_size'], len(dataset), config['batch_size']), desc=f"Epoch #{epoch}") as pbar:
-            for i in pbar:
-                outputs = model(audios) # (T, N, C)
+    try:
+        for epoch in range(config['epochs']):
+            audios, labels, audio_lengths, label_lengths = (t.to(config['device']) for t in dataset.get_batch(0, config['batch_size']))
+            with tqdm(range(config['batch_size'], len(dataset), config['batch_size']), desc=f"Epoch #{epoch}") as pbar:
+                for i in pbar:
+                    outputs = model(audios) # (T, N, C)
 
-                loss: torch.Tensor = criterion(outputs, labels, audio_lengths, label_lengths)
+                    loss: torch.Tensor = criterion(outputs, labels, audio_lengths, label_lengths)
 
-                audios, labels, audio_lengths, label_lengths = (t.to(config['device']) for t in dataset.get_batch(i, i+config['batch_size']))
+                    audios, labels, audio_lengths, label_lengths = (t.to(config['device']) for t in dataset.get_batch(i, i+config['batch_size']))
 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    optimizer.zero_grad()
 
-                loss = loss.item()
-                pbar.set_postfix(loss=loss)
-                wandb.log({'loss': loss})
-                scheduler.step(loss)
-                print(str(pbar))
+                    loss = loss.item()
+                    pbar.set_postfix(loss=loss)
+                    wandb.log({'loss': loss})
+                    scheduler.step(loss)
+                    print(str(pbar))
+    except:
+        pass
+
+    print("Saving the model")
+    torch.save({"model_state": model.state_dict(), "optimizer_state": optimizer.state_dict()}, "output.bin")
 
 
 if __name__ == '__main__':
