@@ -4,6 +4,7 @@ from tqdm import tqdm
 import torch.optim as optim
 import torch.nn as nn
 import torch
+import wandb
 
 
 config = {
@@ -36,6 +37,8 @@ config = {
 }
 
 def main(config):
+    wandb.init()
+
     model = Model(**config['model'], **config['common']).to(config['device'])
     dataset = Dataset(**config['data'], **config['common'])
 
@@ -56,6 +59,7 @@ def main(config):
             optimizer.zero_grad()
 
             pbar.set_postfix(loss=loss.item())
+            wandb.log({'loss': loss.item()})
 
 
 if __name__ == '__main__':
