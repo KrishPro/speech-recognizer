@@ -7,6 +7,7 @@ from torch.utils import data
 import torch.nn as nn
 import pandas as pd
 import torchaudio
+import librosa
 import random
 import string
 import torch
@@ -49,12 +50,11 @@ class Dataset(data.Dataset):
 
         fname, sentence = dpoint['path'], dpoint['sentence']
         
-        audio, sr = torchaudio.load(os.path.join(self.clips_dir, fname))
+        audio, sr = librosa.load(os.path.join(self.clips_dir, fname), sr=self.sample_rate)
         
-        labels = self.text_to_ints(unidecode(sentence.lower()))
+        audio = torch.from_numpy(audio).unsqueeze(0)
 
-        if sr != self.sample_rate:
-            audio = F.resample(audio, sr, self.sample_rate)
+        labels = self.text_to_ints(unidecode(sentence.lower()))
 
         audio: torch.Tensor = self.mel_spectrogram(audio)
 
