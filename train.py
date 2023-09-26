@@ -45,6 +45,8 @@ def main(config):
     criterion = nn.CTCLoss(blank=model.vocab_size-1, zero_infinity=True)
     optimizer = optim.Adam(model.parameters(), lr=config['lr'])
 
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=10_000)
+
     audios, labels, audio_lengths, label_lengths = (t.to(config['device']) for t in dataset.get_batch(0, config['batch_size']))
     with tqdm(range(config['batch_size'], len(dataset), config['batch_size'])) as pbar:
         for i in pbar:
@@ -58,8 +60,10 @@ def main(config):
             optimizer.step()
             optimizer.zero_grad()
 
-            pbar.set_postfix(loss=loss.item())
-            wandb.log({'loss': loss.item()})
+            loss = loss.item()
+            pbar.set_postfix(loss=loss)
+            wandb.log({'loss': loss})
+            scheduler.step(loss)
 
 
 if __name__ == '__main__':
