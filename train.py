@@ -64,6 +64,7 @@ def main(config):
             pbar.set_postfix(loss=loss)
             wandb.log({'loss': loss})
             scheduler.step(loss)
+            print(str(pbar))
 
 
 if __name__ == '__main__':
