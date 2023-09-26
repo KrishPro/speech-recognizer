@@ -27,12 +27,12 @@ class Dataset(data.Dataset):
     char_to_int = {c:i+1 for i,c in enumerate(text)}
     int_to_char = {i+1:c for i,c in enumerate(text)}
     
-    def __init__(self, data_dir: str, sample_rate: int, freq_mask=15, time_mask=35):
+    def __init__(self, data_dir: str, sample_rate: int, n_feats=128, freq_mask=15, time_mask=35, win_length=160, hop_length=80):
         
         self.dataframe = pd.read_csv(os.path.join(data_dir, "validated.tsv"), sep="\t")[['path', 'sentence']].dropna()
         self.clips_dir = os.path.join(data_dir, "clips")
         
-        self.mel_spectrogram = T.MelSpectrogram(sample_rate, win_length=160, hop_length=80)
+        self.mel_spectrogram = T.MelSpectrogram(sample_rate, n_mels=n_feats, win_length=win_length, hop_length=hop_length)
                 
         self.specaug = nn.Sequential(
             torchaudio.transforms.FrequencyMasking(freq_mask_param=freq_mask),
