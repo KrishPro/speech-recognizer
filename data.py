@@ -46,33 +46,32 @@ class Dataset(data.Dataset):
                 
 
     def __getitem__(self, idx: int):
-        dpoint = self.dataframe.iloc[idx]
+        try:
+            dpoint = self.dataframe.iloc[idx]
 
-        fname, sentence = dpoint['path'], dpoint['sentence']
-        
-        audio, sr = librosa.load(os.path.join(self.clips_dir, fname), sr=self.sample_rate)
-        
-        audio = torch.from_numpy(audio).unsqueeze(0)
+            fname, sentence = dpoint['path'], dpoint['sentence']
+            
+            audio, sr = librosa.load(os.path.join(self.clips_dir, fname), sr=self.sample_rate)
+            
+            audio = torch.from_numpy(audio).unsqueeze(0)
 
-        labels = self.text_to_ints(unidecode(sentence.lower()))
+            labels = self.text_to_ints(unidecode(sentence.lower()))
 
-        audio: torch.Tensor = self.mel_spectrogram(audio)
+            audio: torch.Tensor = self.mel_spectrogram(audio)
 
-        audio = (audio + 1e-14).log()
+            audio = (audio + 1e-14).log()
 
-        rand = random.random()
+            rand = random.random()
 
-        if rand > 0.50: audio = self.specaug(audio)
-        if rand > 0.75: audio = self.specaug(audio)
+            if rand > 0.50: audio = self.specaug(audio)
+            if rand > 0.75: audio = self.specaug(audio)
 
-        error = None
+            if audio.size(-1)//2 < len(labels): raise Exception("Label length is greater than audio length")
+            if audio.size(-1)//2 > 2000:        raise Exception("Audio len is greater than 2000")
+            if audio.size(0) != 1:              raise Exception("More or Less than 1 channel")
+            if len(labels) < 1:                 raise Exception("Empty label text")
 
-        if audio.size(-1)//2 < len(labels): error = "Label length is greater than audio length"
-        if audio.size(-1)//2 > 2000:        error = "Audio len is greater than 2000"
-        if audio.size(0) != 1:              error = "More or Less than 1 channel"
-        if len(labels) < 1:                 error = "Empty label text"
-
-        if error:
+        except Exception as e:
             return self.__getitem__(idx-1 if idx!=0 else idx+1)
 
         return audio, labels
