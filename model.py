@@ -6,7 +6,7 @@ import torch
 
 class Model(nn.Module):
     
-    vocab_size = len(Dataset.text) + 1 # [0=padding, 1...len=letters, len+1=blank(CTC)]
+    vocab_size = len(Dataset.text) + 2 # [0=padding, 1...len=letters, len+1=blank(CTC)]
     
     def __init__(self, n_feats: int, hidden_size: int, num_layers=1, dropout_p=0.1):
         super().__init__()
