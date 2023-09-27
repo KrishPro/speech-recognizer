@@ -44,9 +44,15 @@ def main(config):
     model = Model(**config['model'], **config['common']).to(config['device'])
     dataset = Dataset(**config['data'], **config['common'])
 
+
     criterion = nn.CTCLoss(blank=model.vocab_size-1, zero_infinity=True)
     optimizer = optim.Adam(model.parameters(), lr=config['lr'])
 
+    if "checkpoint" in config.keys():
+        state = torch.load(config['checkpoint'])
+        model.load_state_dict(state['model_state'])
+        optimizer.load_state_dict(state['optimizer_state'])
+        
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=10_000)
 
     try:
