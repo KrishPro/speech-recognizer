@@ -52,6 +52,10 @@ def main(config):
         state = torch.load(config['checkpoint'])
         model.load_state_dict(state['model_state'])
         optimizer.load_state_dict(state['optimizer_state'])
+
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = max(param_group['lr'], 3e-4) # setting a minimum initial limit on lr.
+            # because there is no benifit in trainning with lr of 1e-7.
         
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=10_000)
 
@@ -72,7 +76,7 @@ def main(config):
 
                     loss = loss.item()
                     pbar.set_postfix(loss=loss)
-                    wandb.log({'loss': loss})
+                    wandb.log({'loss': loss, 'lr': optimizer.param_groups[0]['lr']})
                     scheduler.step(loss)
                     print(str(pbar))
     except:
